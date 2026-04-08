@@ -174,19 +174,36 @@ sections.forEach(section => {
 // --- MODAL FUNCTIONALITY ---
 const modal = document.getElementById('certModal');
 const modalTitle = document.getElementById('modalTitle');
-const modalImage = document.getElementById('modalImage');
+const modalImageContainer = document.getElementById('modalImageContainer');
 
 window.openModal = function(certId) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden'; // Prevent scrolling
     
     // Set title and image based on certId
+    let title = "";
+    let fileSrc = "";
+    
     if(certId === 'cert1') {
-        modalTitle.textContent = "Applied Artificial Intelligence Workshop";
-        modalImage.src = "1.jpg";
+        title = "Applied Artificial Intelligence Workshop";
+        fileSrc = "1.jpg";
     } else if (certId === 'cert2') {
-        modalTitle.textContent = "Cyber Security & Ethical Hacking Workshop";
-        modalImage.src = "2.jpg";
+        title = "Cyber Security & Ethical Hacking Workshop";
+        fileSrc = "2.jpg";
+    } else if (certId === 'cert_keltron') {
+        title = "Keltron Internship Certificate";
+        fileSrc = "keltron certificate.pdf";
+    } else if (certId === 'cert3') {
+        title = "Infosys Certification";
+        fileSrc = "INFOSYS.pdf";
+    }
+
+    modalTitle.textContent = title;
+    
+    if (fileSrc.toLowerCase().endsWith('.pdf')) {
+        modalImageContainer.innerHTML = `<iframe src="${fileSrc}" style="width: 100%; height: 80vh; border: none; border-radius: 8px;"></iframe>`;
+    } else {
+        modalImageContainer.innerHTML = `<img id="modalImage" src="${fileSrc}" alt="Certificate" style="max-width: 100%; max-height: 80vh; object-fit: contain;">`;
     }
 }
 

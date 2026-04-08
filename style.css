@@ -442,6 +442,10 @@ nav.scrolled {
     background: linear-gradient(45deg, #4c1d95, #8b5cf6);
 }
 
+.bg-gradient-3 {
+    background: linear-gradient(45deg, #0f766e, #14b8a6);
+}
+
 .cert-info {
     border-radius: 0 0 24px 24px !important;
     border-top: none !important;
