@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Fuel Cost Pro | km/L · ₹ / USD</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 30%, #0b2b2b, #05161a);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.8rem;
+    }
+
+    .calculator-card {
+      max-width: 780px;
+      width: 100%;
+      background: rgba(18, 28, 32, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 3rem;
+      box-shadow: 0 30px 55px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(80, 180, 150, 0.2);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .calculator-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 40px 65px rgba(0, 0, 0, 0.6);
+    }
+
+    .calc-header {
+      background: linear-gradient(135deg, #0d3b3f, #06212a);
+      padding: 2rem 2rem 1.8rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(90, 210, 180, 0.3);
+    }
+
+    .calc-header h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(120deg, #e0f2e9, #b9f3e0);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .calc-header h1:before {
+      content: "⛽";
+      font-size: 2.2rem;
+      background: none;
+      -webkit-background-clip: unset;
+      color: #b9f3e0;
+    }
+
+    .calc-header p {
+      font-size: 0.9rem;
+      color: #a2cfcd;
+      margin-top: 0.65rem;
+      font-weight: 450;
+    }
+
+    .form-section {
+      padding: 2rem 2rem 1rem 2rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      color: #c7e9e4;
+      font-size: 0.85rem;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .input-field {
+      display: flex;
+      align-items: center;
+      background: rgba(10, 25, 28, 0.8);
+      border-radius: 2.2rem;
+      border: 1px solid rgba(70, 160, 140, 0.5);
+      transition: all 0.2s;
+      padding: 0.2rem 1.2rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .input-field:focus-within {
+      border-color: #6cd4b0;
+      box-shadow: 0 0 0 3px rgba(108, 212, 176, 0.25);
+      background: rgba(15, 35, 40, 0.95);
+    }
+
+    .input-field span.currency-symbol,
+    .input-field span.unit {
+      background: transparent;
+      font-weight: 700;
+      color: #6cd4b0;
+      padding-right: 0.6rem;
+      font-size: 1rem;
+    }
+
+    .input-field input {
+      width: 100%;
+      padding: 0.85rem 0.3rem 0.85rem 0;
+      border: none;
+      background: transparent;
+      font-size: 1rem;
+      font-weight: 500;
+      outline: none;
+      color: #f0faf5;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 0.5;
+    }
+
+    .double-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .double-row .input-group {
+      flex: 1;
+    }
+
+    .currency-selector {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 3rem;
+      display: flex;
+      padding: 0.25rem;
+      gap: 0.25rem;
+      border: 1px solid rgba(108, 212, 176, 0.3);
+    }
+
+    .currency-btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.65rem 0;
+      border-radius: 2rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: #bbddd4;
+      border: none;
+      backdrop-filter: blur(2px);
+    }
+
+    .currency-btn.active {
+      background: #2c8b74;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.1);
+    }
+
+    .unit-switch {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 2.5rem;
+      padding: 0.2rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(108, 212, 176, 0.3);
+    }
+
+    .unit-option {
+      flex: 1;
+      text-align: center;
+      padding: 0.55rem 0;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #bbddd4;
+    }
+
+    .unit-option.active {
+      background: #1f5c4e;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .result-panel {
+      background: linear-gradient(125deg, rgba(25, 45, 48, 0.9), rgba(15, 32, 34, 0.95));
+      margin: 1.2rem 2rem 1.8rem 2rem;
+      border-radius: 2rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(108, 212, 176, 0.35);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.4);
+    }
+
+    .cost-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px dashed rgba(108, 212, 176, 0.4);
+      padding-bottom: 0.8rem;
+    }
+
+    .cost-label {
+      font-weight: 700;
+      color: #cdeee7;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+    }
+
+    .cost-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(130deg, #f5fffc, #c2f0e4);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .dual-currency-row {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.8rem 1rem;
+      border-radius: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 0.6rem;
+      gap: 1rem;
+    }
+
+    .currency-item {
+      text-align: center;
+      flex: 1;
+      background: rgba(20, 40, 42, 0.6);
+      border-radius: 1.2rem;
+      padding: 0.5rem 0;
+    }
+
+    .currency-item span:first-child {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #9bcbc2;
+      display: block;
+      letter-spacing: 0.5px;
+    }
+
+    .currency-amount {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .rupee-amt {
+      color: #d4f3e8;
+    }
+
+    .dollar-amt {
+      color: #c0e2ff;
+    }
+
+    .fuel-needed {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px dashed rgba(108, 212, 176, 0.5);
+      padding-top: 1rem;
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #cbe9e2;
+    }
+
+    .extra-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.7rem;
+      font-size: 0.78rem;
+      color: #aad3ca;
+      font-weight: 500;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      padding: 0 2rem 2rem 2rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      background: rgba(20, 50, 48, 0.9);
+      border: 1px solid rgba(108, 212, 176, 0.5);
+      padding: 0.85rem 0;
+      border-radius: 3rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #e2f5ef;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      backdrop-filter: blur(5px);
+    }
+
+    button#calculateBtn {
+      background: #1f735d;
+      border-color: #8fe6cd;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button#calculateBtn:hover {
+      background: #0f5e4b;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+    }
+
+    button#resetBtn {
+      background: rgba(45, 70, 70, 0.85);
+    }
+
+    button#resetBtn:hover {
+      background: #2c4e48;
+      transform: translateY(-2px);
+      border-color: #6cd4b0;
+    }
+
+    .small-hint {
+      font-size: 0.68rem;
+      color: #88beb2;
+      margin-top: 0.2rem;
+      text-align: center;
+      padding-bottom: 1.2rem;
+    }
+
+    .copyright-footer {
+      text-align: center;
+      padding: 0.8rem 1rem 1.2rem;
+      font-size: 0.7rem;
+      color: #5f9e92;
+      border-top: 1px solid rgba(108, 212, 176, 0.2);
+      margin-top: 0.5rem;
+      letter-spacing: 0.3px;
+    }
+
+    .copyright-footer a {
+      color: #8ad4c2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .copyright-footer a:hover {
+      text-decoration: underline;
+      color: #bcf5e6;
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 1rem;
+      }
+      .calculator-card {
+        border-radius: 2rem;
+      }
+      .form-section, .action-buttons, .result-panel {
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
+      }
+      .cost-value {
+        font-size: 1.5rem;
+      }
+      .currency-amount {
+        font-size: 1rem;
+      }
+      .calc-header h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator-card">
+  <div class="calc-header">
+    <h1>Fuel Cost Pro</h1>
+    <p>km/L · real-time ₹ / USD · smart trip budgeting</p>
+  </div>
+
+  <div class="form-section">
+    <div class="double-row">
+      <div class="input-group">
+        <label><span>📍</span> Distance</label>
+        <div class="input-field">
+          <input type="number" id="distanceInput" placeholder="e.g., 350" value="240" step="any">
+          <span class="unit" id="distanceUnitLabel">km</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label><span>⚙️</span> Fuel Economy</label>
+        <div class="input-field">
+          <input type="number" id="economyInput" placeholder="km per liter" value="15.5" step="any">
+          <span class="unit" id="economyUnitLabel">km/L</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label><span>⛽</span> Fuel Price</label>
+      <div class="input-field">
+        <span class="currency-symbol" id="priceCurrencySymbol">₹</span>
+        <input type="number" id="priceInput" placeholder="price per liter" value="105.50" step="any">
+        <span class="unit" id="priceUnitLabel">/ liter</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label><span>💱</span> Currency for Fuel Price</label>
+      <div class="currency-selector" id="currencyToggle">
+        <button class="currency-btn active" data-currency="inr">🇮🇳 INR (₹)</button>
+        <button class="currency-btn" data-currency="usd">🇺🇸 USD ($)</button>
+      </div>
+    </div>
+
+    <div class="unit-switch" id="unitToggle">
+      <div class="unit-option active" data-unit="metric">🌍 Metric (km, km/L)</div>
+      <div class="unit-option" data-unit="imperial">🇺🇸 Imperial (miles, MPG)</div>
+    </div>
+
+    <div class="double-row">
+      <div class="input-group">
+        <label><span>👥</span> Split between</label>
+        <div class="input-field">
+          <input type="number" id="peopleSplit" placeholder="1" value="1" min="1" step="1">
+          <span class="unit">person(s)</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label><span>🔄</span> Round trip</label>
+        <div class="input-field" style="justify-content: space-between; padding-right: 1rem;">
+          <span style="font-weight: 500; color:#c7e9e4;">Round trip mode</span>
+          <input type="checkbox" id="roundTripCheck" style="width: 1.2rem; height: 1.2rem; cursor: pointer; accent-color: #2c8b74;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="cost-main">
+      <span class="cost-label">💰 Total Fuel Cost</span>
+      <span class="cost-value" id="totalCostDisplay">₹0.00</span>
+    </div>
+    
+    <div class="dual-currency-row">
+      <div class="currency-item">
+        <span>🇮🇳 INR</span>
+        <div class="currency-amount rupee-amt" id="inrAmountDisplay">₹0.00</div>
+      </div>
+      <div class="currency-item">
+        <span>🇺🇸 USD</span>
+        <div class="currency-amount dollar-amt" id="usdAmountDisplay">$0.00</div>
+      </div>
+    </div>
+
+    <div class="fuel-needed">
+      <span>⛽ Fuel required</span>
+      <strong id="fuelVolumeDisplay">0.00 L</strong>
+    </div>
+    <div class="extra-info">
+      <span>🛣️ Effective distance</span>
+      <span id="effectiveDistanceDisplay">240 km</span>
+    </div>
+    <div class="extra-info">
+      <span>👤 Cost per person</span>
+      <span id="costPerPersonDisplay">₹0.00</span>
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button id="calculateBtn">✨ Calculate Cost</button>
+    <button id="resetBtn">⟳ Reset</button>
+  </div>
+  
+  <div class="copyright-footer">
+    © 2026 NavaneethKrishna | Fuel Cost Pro — All rights reserved.<br>
+    <span style="font-size: 0.65rem;">💱 1 USD = 83.50 INR · km/L ↔ MPG auto conversion</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const distanceInput = document.getElementById('distanceInput');
+    const economyInput = document.getElementById('economyInput');
+    const priceInput = document.getElementById('priceInput');
+    const peopleSplitInput = document.getElementById('peopleSplit');
+    const roundTripCheck = document.getElementById('roundTripCheck');
+    
+    const totalCostDisplay = document.getElementById('totalCostDisplay');
+    const fuelVolumeDisplay = document.getElementById('fuelVolumeDisplay');
+    const effectiveDistanceDisplay = document.getElementById('effectiveDistanceDisplay');
+    const costPerPersonDisplay = document.getElementById('costPerPersonDisplay');
+    const inrAmountDisplay = document.getElementById('inrAmountDisplay');
+    const usdAmountDisplay = document.getElementById('usdAmountDisplay');
+    const priceCurrencySymbol = document.getElementById('priceCurrencySymbol');
+    
+    const distanceUnitLabel = document.getElementById('distanceUnitLabel');
+    const economyUnitLabel = document.getElementById('economyUnitLabel');
+    const priceUnitLabel = document.getElementById('priceUnitLabel');
+    
+    const unitOptions = document.querySelectorAll('.unit-option');
+    const currencyBtns = document.querySelectorAll('.currency-btn');
+    
+    let currentUnitSystem = 'metric';
+    let selectedCurrency = 'inr';
+    const exchangeRate = 83.50;
+    
+    function updatePriceSymbol() {
+      priceCurrencySymbol.innerText = selectedCurrency === 'inr' ? '₹' : '$';
+    }
+    
+    function updateUnitLabelsAndPlaceholders() {
+      if (currentUnitSystem === 'metric') {
+        distanceUnitLabel.innerText = 'km';
+        economyUnitLabel.innerText = 'km/L';
+        priceUnitLabel.innerText = '/ liter';
+        distanceInput.placeholder = "e.g., 350 km";
+        economyInput.placeholder = "e.g., 15.5 km/L";
+        priceInput.placeholder = selectedCurrency === 'inr' ? "₹ per liter" : "$ per liter";
+      } else {
+        distanceUnitLabel.innerText = 'miles';
+        economyUnitLabel.innerText = 'MPG';
+        priceUnitLabel.innerText = '/ gallon';
+        distanceInput.placeholder = "e.g., 200 miles";
+        economyInput.placeholder = "e.g., 25 MPG";
+        priceInput.placeholder = selectedCurrency === 'inr' ? "₹ per gallon" : "$ per gallon";
+      }
+    }
+    
+    function setActiveUnitStyle(system) {
+      unitOptions.forEach(opt => {
+        const unitVal = opt.getAttribute('data-unit');
+        if (unitVal === system) opt.classList.add('active');
+        else opt.classList.remove('active');
+      });
+    }
+    
+    function setActiveCurrencyStyle(currency) {
+      currencyBtns.forEach(btn => {
+        const currVal = btn.getAttribute('data-currency');
+        if (currVal === currency) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+    
+    function calculateFuelDetails() {
+      let rawDistance = parseFloat(distanceInput.value);
+      let rawEconomy = parseFloat(economyInput.value);
+      let rawPrice = parseFloat(priceInput.value);
+      let peopleCount = parseInt(peopleSplitInput.value, 10);
+      
+      if (isNaN(rawDistance) || rawDistance <= 0) rawDistance = 0;
+      if (isNaN(rawEconomy) || rawEconomy <= 0) rawEconomy = 0;
+      if (isNaN(rawPrice) || rawPrice <= 0) rawPrice = 0;
+      if (isNaN(peopleCount) || peopleCount < 1) peopleCount = 1;
+      
+      let effectiveDistance = rawDistance;
+      if (roundTripCheck.checked) effectiveDistance = rawDistance * 2;
+      
+      let fuelVolume = 0;
+      let totalCostInSelectedCurrency = 0;
+      
+      if (currentUnitSystem === 'metric') {
+        if (rawEconomy > 0 && effectiveDistance > 0) {
+          fuelVolume = effectiveDistance / rawEconomy;
+          totalCostInSelectedCurrency = fuelVolume * rawPrice;
+        }
+      } else {
+        if (rawEconomy > 0 && effectiveDistance > 0) {
+          fuelVolume = effectiveDistance / rawEconomy;
+          totalCostInSelectedCurrency = fuelVolume * rawPrice;
+        }
+      }
+      
+      let totalCostINR = 0, totalCostUSD = 0;
+      if (selectedCurrency === 'inr') {
+        totalCostINR = totalCostInSelectedCurrency;
+        totalCostUSD = totalCostINR / exchangeRate;
+      } else {
+        totalCostUSD = totalCostInSelectedCurrency;
+        totalCostINR = totalCostUSD * exchangeRate;
+      }
+      
+      let costPerPersonInSelected = peopleCount > 0 ? totalCostInSelectedCurrency / peopleCount : 0;
+      
+      return {
+        fuelVolume: fuelVolume,
+        totalCostInSelected: totalCostInSelectedCurrency,
+        totalCostINR: totalCostINR,
+        totalCostUSD: totalCostUSD,
+        effectiveDistance: effectiveDistance,
+        costPerPersonInSelected: costPerPersonInSelected,
+        isMetric: currentUnitSystem === 'metric'
+      };
+    }
+    
+    function formatINR(value) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
+    function formatUSD(value) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
+    function formatSelectedCurrency(value) {
+      return selectedCurrency === 'inr' ? formatINR(value) : formatUSD(value);
+    }
+    
+    function formatFuelVolume(volume, isMetric) {
+      if (isMetric) return `${volume.toFixed(2)} L`;
+      else return `${volume.toFixed(2)} gal`;
+    }
+    
+    function formatDistance(dist, isMetric) {
+      if (isMetric) return `${dist.toFixed(1)} km`;
+      else return `${dist.toFixed(1)} miles`;
+    }
+    
+    function updateResults() {
+      const details = calculateFuelDetails();
+      totalCostDisplay.innerText = formatSelectedCurrency(details.totalCostInSelected);
+      inrAmountDisplay.innerText = formatINR(details.totalCostINR);
+      usdAmountDisplay.innerText = formatUSD(details.totalCostUSD);
+      fuelVolumeDisplay.innerText = formatFuelVolume(details.fuelVolume, details.isMetric);
+      effectiveDistanceDisplay.innerText = formatDistance(details.effectiveDistance, details.isMetric);
+      costPerPersonDisplay.innerText = formatSelectedCurrency(details.costPerPersonInSelected);
+    }
+    
+    function resetToDefaults() {
+      if (currentUnitSystem === 'metric') {
+        distanceInput.value = "240";
+        if (selectedCurrency === 'inr') {
+          economyInput.value = "15.5";
+          priceInput.value = "105.50";
+        } else {
+          economyInput.value = "15.5";
+          priceInput.value = "1.26";
+        }
+      } else {
+        distanceInput.value = "150";
+        if (selectedCurrency === 'inr') {
+          economyInput.value = "25";
+          priceInput.value = "398.0";
+        } else {
+          economyInput.value = "25";
+          priceInput.value = "4.77";
+        }
+      }
+      peopleSplitInput.value = "1";
+      roundTripCheck.checked = false;
+      updateResults();
+    }
+    
+    function convertEconomyValue(value, fromSystem, toSystem) {
+      if (fromSystem === 'metric' && toSystem === 'imperial') return value * 2.35214583;
+      else if (fromSystem === 'imperial' && toSystem === 'metric') return value / 2.35214583;
+      return value;
+    }
+    
+    function setUnitSystem(system) {
+      if (system === currentUnitSystem) return;
+      let oldDistance = parseFloat(distanceInput.value);
+      let oldEconomy = parseFloat(economyInput.value);
+      let oldPrice = parseFloat(priceInput.value);
+      
+      if (system === 'metric') {
+        if (!isNaN(oldDistance) && oldDistance > 0) distanceInput.value = (oldDistance * 1.60934).toFixed(1);
+        else distanceInput.value = "240";
+        if (!isNaN(oldEconomy) && oldEconomy > 0) economyInput.value = convertEconomyValue(oldEconomy, 'imperial', 'metric').toFixed(2);
+        else economyInput.value = "15.5";
+        if (!isNaN(oldPrice) && oldPrice > 0) priceInput.value = (oldPrice / 3.78541).toFixed(3);
+        else priceInput.value = selectedCurrency === 'inr' ? "105.50" : "1.26";
+      } else {
+        if (!isNaN(oldDistance) && oldDistance > 0) distanceInput.value = (oldDistance / 1.60934).toFixed(1);
+        else distanceInput.value = "150";
+        if (!isNaN(oldEconomy) && oldEconomy > 0) economyInput.value = convertEconomyValue(oldEconomy, 'metric', 'imperial').toFixed(1);
+        else economyInput.value = "25";
+        if (!isNaN(oldPrice) && oldPrice > 0) priceInput.value = (oldPrice * 3.78541).toFixed(3);
+        else priceInput.value = selectedCurrency === 'inr' ? "398.0" : "4.77";
+      }
+      currentUnitSystem = system;
+      updateUnitLabelsAndPlaceholders();
+      setActiveUnitStyle(currentUnitSystem);
+      updateResults();
+    }
+    
+    function setCurrency(currency) {
+      if (currency === selectedCurrency) return;
+      let oldPrice = parseFloat(priceInput.value);
+      let oldCurrency = selectedCurrency;
+      selectedCurrency = currency;
+      
+      if (!isNaN(oldPrice) && oldPrice > 0) {
+        if (oldCurrency === 'inr' && currency === 'usd') priceInput.value = (oldPrice / exchangeRate).toFixed(3);
+        else if (oldCurrency === 'usd' && currency === 'inr') priceInput.value = (oldPrice * exchangeRate).toFixed(3);
+        else priceInput.value = oldPrice.toFixed(3);
+      } else {
+        if (currency === 'inr') priceInput.value = currentUnitSystem === 'metric' ? "105.50" : "398.0";
+        else priceInput.value = currentUnitSystem === 'metric' ? "1.26" : "4.77";
+      }
+      updatePriceSymbol();
+      setActiveCurrencyStyle(selectedCurrency);
+      updateUnitLabelsAndPlaceholders();
+      updateResults();
+    }
+    
+    function attachEvents() {
+      const inputs = [distanceInput, economyInput, priceInput, peopleSplitInput, roundTripCheck];
+      inputs.forEach(input => {
+        input.addEventListener('input', () => updateResults());
+        input.addEventListener('change', () => updateResults());
+      });
+    }
+    
+    function initToggles() {
+      unitOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+          const newSystem = opt.getAttribute('data-unit');
+          if (newSystem !== currentUnitSystem) setUnitSystem(newSystem);
+        });
+      });
+      currencyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const newCurrency = btn.getAttribute('data-currency');
+          if (newCurrency !== selectedCurrency) setCurrency(newCurrency);
+        });
+      });
+    }
+    
+    function enforcePeopleMin() {
+      peopleSplitInput.addEventListener('change', () => {
+        let val = parseInt(peopleSplitInput.value, 10);
+        if (isNaN(val) || val < 1) peopleSplitInput.value = 1;
+        updateResults();
+      });
+    }
+    
+    function manualCalculate() {
+      updateResults();
+      const panel = document.getElementById('resultPanel');
+      panel.style.transition = 'background 0.2s';
+      panel.style.background = 'rgba(40, 70, 70, 0.95)';
+      setTimeout(() => { panel.style.background = 'linear-gradient(125deg, rgba(25, 45, 48, 0.9), rgba(15, 32, 34, 0.95))'; }, 180);
+    }
+    
+    function init() {
+      currentUnitSystem = 'metric';
+      selectedCurrency = 'inr';
+      updateUnitLabelsAndPlaceholders();
+      updatePriceSymbol();
+      setActiveUnitStyle('metric');
+      setActiveCurrencyStyle('inr');
+      distanceInput.value = "240";
+      economyInput.value = "15.5";
+      priceInput.value = "105.50";
+      peopleSplitInput.value = "1";
+      roundTripCheck.checked = false;
+      updateResults();
+      attachEvents();
+      initToggles();
+      enforcePeopleMin();
+      document.getElementById('calculateBtn').addEventListener('click', manualCalculate);
+      document.getElementById('resetBtn').addEventListener('click', resetToDefaults);
+    }
+    
+    init();
+  })();
+</script>
+</body>
+</html>
